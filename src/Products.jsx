@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Spinner from './Spinner';
 import useFetch from './services/useFetch';
 import { useParams } from 'react-router-dom';
-import PageNotFound from './404';
+import PageNotFound from './PageNotFound';
 import { Link } from 'react-router-dom';
 
 export default function Products() {
@@ -10,7 +10,7 @@ export default function Products() {
   const { category } = useParams();
 
   const { data: products, loading, error } = useFetch(
-    `products?category=${category}`
+    'products?category=' + category
   );
 
   function renderProduct(p) {
@@ -24,15 +24,17 @@ export default function Products() {
       </div>
     );
   }
-
   const filteredProducts = size
     ? products.filter((product) =>
-        product.skus.find((sku) => sku.size === parseInt(size))
+        product.skus.find((s) => s.size === parseInt(size))
       )
     : products;
+
   if (error) throw error;
+
   if (loading) return <Spinner />;
   if (products.length === 0) return <PageNotFound />;
+
   return (
     <>
       <section id="filters">
@@ -47,8 +49,8 @@ export default function Products() {
           <option value="8">8</option>
           <option value="9">9</option>
         </select>
-        {size && <h2>Found {filteredProducts.length} items</h2>}
       </section>
+      {size && <h2>Found {filteredProducts.length} items</h2>}
       <section id="products">{filteredProducts.map(renderProduct)}</section>
     </>
   );

@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import useFetchAll from './services/useFetchAll';
+import { useNavigate } from 'react-router-dom';
 import Spinner from './Spinner';
+import { useCart } from './cartContext';
 
-export default function Cart({ cart, updateQuantity }) {
+export default function Cart() {
+  const { cart, dispatch } = useCart();
   const urls = cart.map((i) => `products/${i.id}`);
   const { data: products, loading, error } = useFetchAll(urls);
-
+  const navigate = useNavigate();
   function renderItem(itemInCart) {
     const { id, sku, quantity } = itemInCart;
     const { price, name, image, skus } = products.find(
@@ -23,7 +26,13 @@ export default function Cart({ cart, updateQuantity }) {
           <p>
             <select
               aria-label={`Select quantity for ${name} size ${size}`}
-              onChange={(e) => updateQuantity(sku, parseInt(e.target.value))}
+              onChange={(e) =>
+                dispatch({
+                  type: 'updateQuantity',
+                  sku,
+                  quantity: parseInt(e.target.value),
+                })
+              }
               value={quantity}
             >
               <option value="0">Remove</option>
@@ -39,20 +48,30 @@ export default function Cart({ cart, updateQuantity }) {
     );
   }
 
+  const numItemsInCart = useMemo(
+    () => cart.reduce((total, item) => total + item.quantity, 0),
+    [cart]
+  );
+
   if (loading) return <Spinner />;
   if (error) throw error;
-  const numItems = cart.reduce((total, currentItem) => {
-    return total + currentItem.quantity;
-  }, 0);
 
   return (
     <section id="cart">
       <h1>
-        {numItems === 0
-          ? 'Cart is empty'
-          : `${numItems} Item${numItems > 1 ? 's' : ''} in my Cart`}
+        {numItemsInCart === 0
+          ? 'Your cart is empty '
+          : `${numItemsInCart} Item${numItemsInCart > 1 ? 's' : ''} in My Cart`}
       </h1>
       <ul>{cart.map(renderItem)}</ul>
+      {cart.length > 0 && (
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate('/checkout')}
+        >
+          Checkout
+        </button>
+      )}
     </section>
   );
 }

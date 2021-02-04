@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 const activeStyle = {
-  color: 'blue',
+  color: 'purple',
 };
 
 export default function Header() {
